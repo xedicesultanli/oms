@@ -6,7 +6,6 @@ import {
   Package, 
   Warehouse, 
   ShoppingCart, 
-  Settings,
   X,
   BarChart3,
   DollarSign
@@ -25,7 +24,6 @@ const navigation = [
   { name: 'Inventory', href: '/inventory', icon: BarChart3 },
   { name: 'Pricing', href: '/pricing', icon: DollarSign },
   { name: 'Orders', href: '/orders', icon: ShoppingCart },
-  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {

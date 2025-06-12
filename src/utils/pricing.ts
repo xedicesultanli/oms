@@ -1,10 +1,10 @@
 import { CurrencyOption } from '../types/pricing';
 
 export const getCurrencyOptions = (): CurrencyOption[] => [
+  { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh' },
   { code: 'USD', name: 'US Dollar', symbol: '$' },
   { code: 'EUR', name: 'Euro', symbol: '€' },
   { code: 'GBP', name: 'British Pound', symbol: '£' },
-  { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh' },
   { code: 'NGN', name: 'Nigerian Naira', symbol: '₦' },
   { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
   { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
@@ -12,9 +12,9 @@ export const getCurrencyOptions = (): CurrencyOption[] => [
   { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
 ];
 
-export const formatCurrency = (amount: number, currencyCode: string = 'USD'): string => {
+export const formatCurrency = (amount: number, currencyCode: string = 'KES'): string => {
   const currency = getCurrencyOptions().find(c => c.code === currencyCode);
-  const symbol = currency?.symbol || currencyCode;
+  const symbol = currency?.symbol || 'KSh';
   
   // Format number with commas and 2 decimal places
   const formattedAmount = amount.toLocaleString('en-US', {
