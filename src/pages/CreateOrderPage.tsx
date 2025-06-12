@@ -27,7 +27,6 @@ export const CreateOrderPage: React.FC = () => {
   const [selectedAddressId, setSelectedAddressId] = useState('');
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
   const [orderLines, setOrderLines] = useState<OrderLineItem[]>([]);
-  const [notes, setNotes] = useState('');
 
   const { data: customersData } = useCustomers({ limit: 1000 });
   const { data: addresses = [] } = useAddresses(selectedCustomerId);
@@ -165,8 +164,7 @@ export const CreateOrderPage: React.FC = () => {
         customer_id: selectedCustomerId,
         delivery_address_id: selectedAddressId,
         order_date: orderDate,
-        status: 'draft',
-        notes,
+        status: 'draft'
       };
 
       const order = await createOrder.mutateAsync(orderData);
@@ -345,20 +343,6 @@ export const CreateOrderPage: React.FC = () => {
                 )}
               </div>
             )}
-
-            {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Order Notes
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Optional notes about this order..."
-              />
-            </div>
 
             <div className="flex justify-end">
               <button
@@ -541,12 +525,6 @@ export const CreateOrderPage: React.FC = () => {
                     <label className="text-sm font-medium text-gray-600">Order Date:</label>
                     <div className="text-gray-900">{new Date(orderDate).toLocaleDateString()}</div>
                   </div>
-                  {notes && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Notes:</label>
-                      <div className="text-gray-900">{notes}</div>
-                    </div>
-                  )}
                 </div>
               </div>
 
