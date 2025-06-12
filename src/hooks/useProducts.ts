@@ -142,7 +142,7 @@ export const useCreateProduct = () => {
         .select('id')
         .eq('sku', productData.sku)
         .neq('status', 'obsolete')
-        .single();
+        .maybeSingle();
 
       if (existingSku) {
         throw new Error('SKU already exists. Please use a unique SKU.');
@@ -155,7 +155,7 @@ export const useCreateProduct = () => {
           .select('id')
           .eq('barcode_uid', productData.barcode_uid)
           .neq('status', 'obsolete')
-          .single();
+          .maybeSingle();
 
         if (existingBarcode) {
           throw new Error('Barcode UID already exists. Please use a unique barcode.');
@@ -212,7 +212,7 @@ export const useUpdateProduct = () => {
           .eq('sku', updateData.sku)
           .neq('id', id)
           .neq('status', 'obsolete')
-          .single();
+          .maybeSingle();
 
         if (existingSku) {
           throw new Error('SKU already exists. Please use a unique SKU.');
@@ -227,7 +227,7 @@ export const useUpdateProduct = () => {
           .eq('barcode_uid', updateData.barcode_uid)
           .neq('id', id)
           .neq('status', 'obsolete')
-          .single();
+          .maybeSingle();
 
         if (existingBarcode) {
           throw new Error('Barcode UID already exists. Please use a unique barcode.');
