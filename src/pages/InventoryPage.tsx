@@ -296,9 +296,10 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
                     <input
                       type="number"
                       min="0"
-                      value={formData.qty_full}
+                      value={formData.qty_full || ''}
                       onChange={(e) => handleChange('qty_full', parseInt(e.target.value) || 0)}
                       className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="0"
                     />
                   </div>
 
@@ -309,9 +310,10 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
                     <input
                       type="number"
                       min="0"
-                      value={formData.qty_empty}
+                      value={formData.qty_empty || ''}
                       onChange={(e) => handleChange('qty_empty', parseInt(e.target.value) || 0)}
                       className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="0"
                     />
                   </div>
                 </div>
@@ -324,9 +326,10 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
                     type="number"
                     min="0"
                     max={formData.qty_full}
-                    value={formData.qty_reserved}
+                    value={formData.qty_reserved || ''}
                     onChange={(e) => handleChange('qty_reserved', parseInt(e.target.value) || 0)}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="0"
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     Cannot exceed full cylinders quantity
