@@ -5,7 +5,7 @@ import { useCustomers } from '../hooks/useCustomers';
 import { useAddresses } from '../hooks/useAddresses';
 import { useProducts } from '../hooks/useProducts';
 import { useCreateOrder, useCreateOrderLine } from '../hooks/useOrders';
-import { useStockAvailability } from '../hooks/useOrders';
+import { useInventory } from '../hooks/useInventory';
 import { usePriceLists, usePriceListItems } from '../hooks/usePricing';
 import { CreateOrderData, CreateOrderLineData } from '../types/order';
 import { formatCurrency } from '../utils/order';
@@ -36,13 +36,15 @@ export const CreateOrderPage: React.FC = () => {
   const createOrder = useCreateOrder();
   const createOrderLine = useCreateOrderLine();
 
+  // Get inventory data for stock availability
+  const { data: inventoryData } = useInventory({ limit: 1000 });
+  const inventory = inventoryData?.inventory || [];
+
   const customers = customersData?.customers || [];
   const products = productsData?.products || [];
   const priceLists = priceListsData?.priceLists || [];
   const defaultPriceList = priceLists.find(pl => pl.is_default);
   
-  const productIds = orderLines.map(line => line.product_id);
-  const { data: stockAvailability = [] } = useStockAvailability(productIds);
   const { data: priceListItems = [] } = usePriceListItems(defaultPriceList?.id || '');
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
@@ -70,14 +72,40 @@ export const CreateOrderPage: React.FC = () => {
     return priceItem?.unit_price || 0;
   };
 
+  // Calculate available stock for a product
+  const getProductStock = (productId: string): number => {
+    // Get all inventory records for this product
+    const productInventory = inventory.filter(item => item.product_id === productId);
+    
+    // Calculate total available (full - reserved)
+    return productInventory.reduce((total, item) => {
+      const available = Math.max(0, item.qty_full - item.qty_reserved);
+      return total + available;
+    }, 0);
+  };
+
+  // Calculate remaining stock after current order lines
+  const getRemainingStock = (productId: string): number => {
+    const totalStock = getProductStock(productId);
+    const currentOrderQuantity = orderLines.find(line => line.product_id === productId)?.quantity || 0;
+    return Math.max(0, totalStock - currentOrderQuantity);
+  };
+
   const handleAddProduct = (productId: string) => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
     const existingLine = orderLines.find(line => line.product_id === productId);
     const unitPrice = getProductPrice(productId);
+    const availableStock = getProductStock(productId);
     
     if (existingLine) {
+      // Check if we can increase quantity
+      if (existingLine.quantity >= availableStock) {
+        // Cannot add more than available stock
+        return;
+      }
+      
       // Increase quantity
       setOrderLines(lines => 
         lines.map(line => 
@@ -87,16 +115,18 @@ export const CreateOrderPage: React.FC = () => {
         )
       );
     } else {
-      // Add new line
-      const newLine: OrderLineItem = {
-        product_id: productId,
-        product_name: product.name,
-        product_sku: product.sku,
-        quantity: 1,
-        unit_price: unitPrice,
-        subtotal: unitPrice,
-      };
-      setOrderLines(lines => [...lines, newLine]);
+      // Add new line if stock is available
+      if (availableStock > 0) {
+        const newLine: OrderLineItem = {
+          product_id: productId,
+          product_name: product.name,
+          product_sku: product.sku,
+          quantity: 1,
+          unit_price: unitPrice,
+          subtotal: unitPrice,
+        };
+        setOrderLines(lines => [...lines, newLine]);
+      }
     }
   };
 
@@ -106,10 +136,15 @@ export const CreateOrderPage: React.FC = () => {
       return;
     }
 
+    const availableStock = getProductStock(productId);
+    
+    // Ensure quantity doesn't exceed available stock
+    const validQuantity = Math.min(quantity, availableStock);
+
     setOrderLines(lines => 
       lines.map(line => 
         line.product_id === productId 
-          ? { ...line, quantity, subtotal: quantity * line.unit_price }
+          ? { ...line, quantity: validQuantity, subtotal: validQuantity * line.unit_price }
           : line
       )
     );
@@ -156,11 +191,6 @@ export const CreateOrderPage: React.FC = () => {
 
   const canProceedToStep2 = selectedCustomerId && selectedAddressId;
   const canCreateOrder = canProceedToStep2 && orderLines.length > 0;
-
-  const getStockInfo = (productId: string) => {
-    const stock = stockAvailability.find(s => s.product_id === productId);
-    return stock ? stock.available_quantity : 0;
-  };
 
   const getStockStatusClass = (available: number) => {
     if (available === 0) return "text-red-600";
@@ -362,7 +392,8 @@ export const CreateOrderPage: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Available Products</h3>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {products.filter(p => p.status === 'active').map((product) => {
-                    const stockAvailable = getStockInfo(product.id);
+                    const stockAvailable = getProductStock(product.id);
+                    const remainingStock = getRemainingStock(product.id);
                     const unitPrice = getProductPrice(product.id);
                     const isInOrder = orderLines.some(line => line.product_id === product.id);
                     const stockStatusClass = getStockStatusClass(stockAvailable);
@@ -405,7 +436,7 @@ export const CreateOrderPage: React.FC = () => {
                 {orderLines.length > 0 ? (
                   <div className="space-y-3">
                     {orderLines.map((line) => {
-                      const stockAvailable = getStockInfo(line.product_id);
+                      const stockAvailable = getProductStock(line.product_id);
                       
                       return (
                         <div key={line.product_id} className="p-3 border border-gray-200 rounded-lg">
@@ -427,13 +458,13 @@ export const CreateOrderPage: React.FC = () => {
                               <input
                                 type="number"
                                 min="1"
-                                max={stockAvailable + line.quantity}
+                                max={stockAvailable}
                                 value={line.quantity}
                                 onChange={(e) => handleUpdateQuantity(line.product_id, parseInt(e.target.value) || 0)}
                                 className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
                               />
                               <span className="text-xs text-gray-500">
-                                (max: {stockAvailable + line.quantity})
+                                (max: {stockAvailable})
                               </span>
                             </div>
                             <div className="text-right">
