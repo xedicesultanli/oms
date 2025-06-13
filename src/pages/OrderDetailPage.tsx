@@ -141,7 +141,7 @@ export const OrderDetailPage: React.FC = () => {
           </button>
           {['draft', 'confirmed'].includes(order.status) && (
             <button
-              onClick={() => navigate(`/orders/${order.id}/edit`)}
+              onClick={() => navigate('/orders/new')}
               className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors"
             >
               <Edit className="h-4 w-4" />
