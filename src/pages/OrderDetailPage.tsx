@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, User, MapPin, Calendar, Package, DollarSign, Clock } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Calendar, Package, DollarSign, Clock } from 'lucide-react';
 import { useOrder, useChangeOrderStatus } from '../hooks/useOrders';
 import { OrderStatusModal } from '../components/orders/OrderStatusModal';
 import { OrderTimeline } from '../components/orders/OrderTimeline';
@@ -139,15 +139,6 @@ export const OrderDetailPage: React.FC = () => {
             <Clock className="h-4 w-4" />
             <span>{showTimeline ? 'Hide' : 'Show'} Timeline</span>
           </button>
-          {['draft', 'confirmed'].includes(order.status) && (
-            <button
-              onClick={() => navigate('/orders/new')}
-              className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <Edit className="h-4 w-4" />
-              <span>Edit Order</span>
-            </button>
-          )}
           {nextStatuses.map((status) => (
             <button
               key={status}
